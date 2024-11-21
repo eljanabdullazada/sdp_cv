@@ -8,7 +8,7 @@ openai.api_key = "sk-proj-NtSjuYxw4J8y_A1PERiqDOvalMfacn7gAs05uwnJMYTCTSUyWmO-V-
 def test_api_connection():
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Use a model available to the free tier
+            model="gpt-4",  # Use a model available to the free tier
             messages=[{"role": "user", "content": "Hello!"}],
         )
         print("API response:", response.choices[0].message['content'])
