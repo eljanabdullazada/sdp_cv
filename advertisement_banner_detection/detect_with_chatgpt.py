@@ -1,4 +1,11 @@
 import os
+
+# Create a directory in a platform-independent way
+dir_name = os.path.join(os.getcwd(), "example_dir")
+os.makedirs(dir_name, exist_ok=True)
+
+print(f"Directory created: {dir_name}")
+
 from PIL import Image
 import openai  # Corrected import statement
 import base64
@@ -22,7 +29,7 @@ def encode_image(image_path):
 def process_image_with_chatgpt(base64_image):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-40",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "Could you please detect if there have any banners."},
                 {"role": "user", "content": f"Here is the image data: {base64_image}. Can you detect?"}
