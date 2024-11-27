@@ -1,17 +1,16 @@
-import os
-
-# Create a directory in a platform-independent way
-dir_name = os.path.join(os.getcwd(), "example_dir")
-os.makedirs(dir_name, exist_ok=True)
-
-print(f"Directory created: {dir_name}")
 
 from PIL import Image
 import openai  # Corrected import statement
 import base64
 
+import os
+# Create a directory in a platform-independent way
+dir_name = os.path.join(os.getcwd(), "example_dir")
+os.makedirs(dir_name, exist_ok=True)
+print(f"Directory created: {dir_name}")
+
 # Set your OpenAI API key here
-openai.api_key = "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"
+openai.api_key = os.getenv("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")
 
 # Path to the image to be processed
 IMAGE_PATH = r"C:\Users\user\Desktop\sdp_cv\advertisement_banner_detection\data\frames\frame_2.jpg"  # Replace with the actual image path
