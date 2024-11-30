@@ -3,7 +3,7 @@ import time
 #for testing if api key and gpt works properly
 
 # Replace with your actual API key
-openai.api_key = "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"
+openai.api_key = "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"
 
 def test_api_connection():
     try:

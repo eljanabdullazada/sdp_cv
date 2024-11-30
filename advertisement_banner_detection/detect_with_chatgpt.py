@@ -1,46 +1,54 @@
 import os
-from PIL import Image
 import openai
 
-# Set your OpenAI API key here
-openai.api_key = "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"
+# OpenAI API Key
+openai.api_key = "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"
 
-def process_frame_with_chatgpt(frame_content):
+
+def analyze_image_url(image_url):
+    """Send image URL to GPT-4 for analysis."""
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4o",  # Specify the model you want to use
+            model="gpt-4",
             messages=[
-                {"role": "user", "content": frame_content}
-            ]
+                {"role": "system", "content": "You are an AI that analyzes image URLs for specific details."},
+                {"role": "user", "content": f"Analyze the following image: {image_url}"}
+            ],
         )
-        return response['choices'][0]['message']['content']  # Adjust based on the response structure
+        return response['choices'][0]['message']['content']
     except Exception as e:
-        print(f"Error during API call: {e}")
+        print(f"Error analyzing image URL: {e}")
         return None
 
-def detect_banners_in_frames(frames_directory, detections_directory, max_attempts=5):
-    frame_files = sorted(os.listdir(frames_directory))
-    attempts = 0  # Counter for attempts
 
-    for frame_file in frame_files:
-        if attempts >= max_attempts:
-            break  # Stop processing if the maximum attempts have been reached
+def process_image_urls_from_file(file_path):
+    """Process image URLs from the specified text file."""
+    try:
+        with open(file_path, 'r') as file:
+            image_urls = file.readlines()
 
-        frame_path = os.path.join(frames_directory, frame_file)
-        print(f"Processing {frame_file} with ChatGPT model...")
+        # Iterate over the URLs and analyze them
+        for image_url in image_urls:
+            image_url = image_url.strip()  # Remove any extra whitespace or newline characters
+            if image_url:
+                print(f"Analyzing image URL: {image_url}")
+                result = analyze_image_url(image_url)
 
-        try:
-            # Load and process the image (if needed)
-            frame_content = f"Content of the image {frame_file}"  # Replace with actual content extraction logic
+                if result:
+                    print(f"Analysis result: {result}")
+                else:
+                    print(f"Failed to analyze the image at {image_url}. Skipping...")
+            else:
+                print("Empty URL found in the file. Skipping...")
+    except FileNotFoundError:
+        print(f"Error: The file {file_path} was not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-            result = process_frame_with_chatgpt(frame_content)
-            if result:
-                # Save result or do something with it
-                print(f"Result for {frame_file}: {result}")
-                attempts += 1  # Increment attempts after successful processing
-
-        except Exception as e:
-            print(f"Error processing {frame_file}: {e}")
 
 if __name__ == "__main__":
-    detect_banners_in_frames("data/frames", "data/detections", max_attempts=5)
+    # Path to the image URLs text file
+    image_urls_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "frames", "image_urls.txt")
+
+    # Process the URLs from the file
+    process_image_urls_from_file(image_urls_file)
