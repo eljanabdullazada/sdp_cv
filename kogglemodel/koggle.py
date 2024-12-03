@@ -7,18 +7,19 @@ import numpy as np
 predictor = SAM2VideoPredictor.from_pretrained("facebook/sam2-hiera-base-plus")
 
 # Video file to process
-video_path = "<path_to_your_video_file>"
+video_path = "C:/Users/user/Downloads/sdp_cv/advertisement_banner_detection/data/videos/dashcam_video.mp4"
 
 # Initialize the model's state with the video
 with torch.inference_mode():
     with torch.autocast("cuda", dtype=torch.bfloat16):
         state = predictor.init_state(video_path)
         
-        # Add prompts to identify advertisement banners (e.g., bounding boxes, points)
-        # You can customize these prompts to focus on banners.
+        # Define bounding box coordinates (example values)
+        x_min, y_min, x_max, y_max = 50, 100, 200, 300
+        
+        # Add prompts to identify advertisement banners
         prompts = [
-            {"type": "box", "coordinates": [x_min, y_min, x_max, y_max]},  # Example bounding box
-            # Add more prompts as needed
+            {"type": "box", "coordinates": [x_min, y_min, x_max, y_max]},
         ]
         
         # Add prompts to the current frame
@@ -29,7 +30,6 @@ with torch.inference_mode():
             print(f"Frame {frame_idx}: Detected objects {object_ids}")
             
             # Save or process masks as needed
-            # For example: save the masks for analysis
             mask_filename = f"output/mask_frame_{frame_idx}.png"
             
             # Convert mask to a format suitable for saving
