@@ -2,9 +2,9 @@ import cv2
 import os
 
 
-def extract_frames(video_path, frame_dir, nth_frame=30):
+def extract_frames(video_path, frame_dir, nth_frame=90, max_frames=100):
     # Create frame directory if it doesn't exist
-    os.makedirs(frame_dir, exist_ok=True)
+    os.makedirs(frame_dir, max_frames, exist_ok=True)
 
     # Open video
     cap = cv2.VideoCapture(video_path)
@@ -30,4 +30,4 @@ def extract_frames(video_path, frame_dir, nth_frame=30):
 
 # Example usage:
 if __name__ == "__main__":
-    extract_frames("data/videos/dashcam_video.mp4", "data/frames", nth_frame=30)
+    extract_frames("data/videos/dashcam_video.mp4", "data/frames", nth_frame=90)

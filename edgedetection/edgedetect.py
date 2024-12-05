@@ -1,6 +1,5 @@
 import cv2
 import os
-
 import numpy as np
 
 # Paths
@@ -10,24 +9,25 @@ frames_folder = r"C:\Users\user\Downloads\sdp_cv\advertisement_banner_detection\
 # Ensure the frames folder exists
 os.makedirs(frames_folder, exist_ok=True)
 
-def process_video_and_detect_lines(video_path, frames_folder):
+def process_video_and_detect_lines(video_path, frames_folder, max_frames=180, skip_frames=60):
     cap = cv2.VideoCapture(video_path)
     frame_count = 0
+    saved_frame_count = 0
 
     while cap.isOpened():
         ret, frame = cap.read()
-        if not ret:
+        if not ret or saved_frame_count >= max_frames:
             break
 
-        # Process the frame to detect lines
-        processed_frame = detect_lines_on_frame(frame)
+        # Process only every `skip_frames` frame
+        if frame_count % skip_frames == 0:
+            processed_frame = detect_lines_on_frame(frame)
+            frame_filename = os.path.join(frames_folder, f"frame_{saved_frame_count:04d}.jpg")
+            cv2.imwrite(frame_filename, processed_frame)
+            saved_frame_count += 1
+            print(f"Processed and saved frame: {frame_filename}")
 
-        # Save the processed frame to the folder
-        frame_filename = os.path.join(frames_folder, f"frame_{frame_count:04d}.jpg")
-        cv2.imwrite(frame_filename, processed_frame)
         frame_count += 1
-
-        print(f"Processed and saved frame: {frame_filename}")
 
     cap.release()
 
@@ -52,4 +52,4 @@ def detect_lines_on_frame(frame):
     return frame
 
 # Execute the processing
-process_video_and_detect_lines(video_path, frames_folder)
+process_video_and_detect_lines(video_path, frames_folder, max_frames=180, skip_frames=60)
