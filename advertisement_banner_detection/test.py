@@ -1,40 +1,28 @@
-import requests
-import json
+import openai
+client = openai.OpenAI()
 
-# Replace with your OpenAI API key
-API_KEY = "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"
+# # Your OpenAI API key
+# api_key = "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"
+#
+# # Set OpenAI API key
+# openai.api_key = api_key
 
-# URL of the image you want to analyze
-image_url = "https://i.imgur.com/EQlBXQu.jpeg"
-
-# Payload for the request
-data = {
-    "model": "gpt-4",  # Ensure you're using GPT-4
-    "messages": [
+response = client.chat.completions.create(
+    model="gpt-4-vision-preview",
+    messages = [
         {
-            "role": "user",
-            "content": "What’s in this image?"
-        },
-        {
-            "role": "user",
-            "content": image_url  # Pass the URL directly as a string
+            "role" : "user",
+            "content" :
+            [
+                {"type" : "text", "text" : "What's in this image?"},
+                {
+                    "type" : "image_url",
+                    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                }
+            ]
         }
     ],
-    "max_tokens": 300
-}
+    max_tokens = 300
+)
 
-# Headers for the request
-headers = {
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {API_KEY}"
-}
-
-# Send the request to OpenAI API
-response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, data=json.dumps(data))
-
-# Check if the response is successful
-if response.status_code == 200:
-    analysis_result = response.json()
-    print("Image Analysis Result:", analysis_result)
-else:
-    print(f"Error analyzing image: {response.text}")
+print(response.choices[0].message.content)

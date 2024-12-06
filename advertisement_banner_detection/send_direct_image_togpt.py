@@ -8,7 +8,7 @@ api_key = "sk-proj-EjKLxNo0mSXmPDJuXQpwc-t83jXQoQSVwK-Ak1HpG8dKKpmW9XoPYGCvV0n06
 openai.api_key = api_key
 
 # File path
-file_path = "frame_145.png"
+file_path = "cropped_image.jpg"
 
 # Convert image to Base64
 with open(file_path, "rb") as image_file:
@@ -16,7 +16,7 @@ with open(file_path, "rb") as image_file:
 
 # Prepare the payload
 response = openai.ChatCompletion.create(
-    model="gpt-4",
+    model="gpt-4o",
     messages=[
         {"role": "system", "content": "You are an assistant analyzing images."},
         {
