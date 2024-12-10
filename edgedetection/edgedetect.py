@@ -3,20 +3,36 @@ import os
 import numpy as np
 
 # Paths
-video_path = r"C:\Users\user\Downloads\sdp_cv\advertisement_banner_detection\data\videos\dashcam_video.mp4"
+video_path = r"C:\Users\user\Downloads\sdp_cv\advertisement_banner_detection\data\videos\IMG_0323.mp4"
 frames_folder = r"C:\Users\user\Downloads\sdp_cv\advertisement_banner_detection\data\frames"
+
+# Debugging
+print(f"Video path being used: {video_path}")
 
 # Ensure the frames folder exists
 os.makedirs(frames_folder, exist_ok=True)
 
-def process_video_and_detect_lines(video_path, frames_folder, max_frames=180, skip_frames=60):
+# Parameters
+max_frames = 180
+
+def process_video_and_detect_lines(video_path, frames_folder, skip_frames=1):
+    if not os.path.exists(video_path):
+        print(f"Error: Video file not found at {video_path}")
+        return
+
     cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print(f"Error: Failed to open video file {video_path}")
+        return
+
+    print(f"Processing video: {video_path}")
+
     frame_count = 0
     saved_frame_count = 0
 
     while cap.isOpened():
         ret, frame = cap.read()
-        if not ret or saved_frame_count >= max_frames:
+        if not ret or frame is None or saved_frame_count >= max_frames:
             break
 
         # Process only every `skip_frames` frame
@@ -52,4 +68,4 @@ def detect_lines_on_frame(frame):
     return frame
 
 # Execute the processing
-process_video_and_detect_lines(video_path, frames_folder, max_frames=180, skip_frames=60)
+process_video_and_detect_lines(video_path, frames_folder, skip_frames=1)
