@@ -1,6 +1,6 @@
 import cv2
 
-video_path = r"C:\Users\user\Desktop\sdp_cv-1\advertisement_banner_detection\data\videos\IMG_0323.mp4"
+video_path = r"C:\Users\user\Desktop\sdp_cv-1\advertisement_banner_detection\data\videos\dashcam_video.mp4"
 
 print(f"Attempting to open video: {video_path}")
 cap = cv2.VideoCapture(video_path)
