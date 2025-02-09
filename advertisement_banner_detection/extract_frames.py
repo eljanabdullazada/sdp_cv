@@ -1,7 +1,6 @@
 import cv2
 import os
 
-
 def extract_frames(video_path, frame_dir, nth_frame=30):
     # Create frame directory if it doesn't exist
     os.makedirs(frame_dir, exist_ok=True)
