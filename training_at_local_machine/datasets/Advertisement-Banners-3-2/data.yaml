@@ -1,0 +1,13 @@
+train: /Users/elcan/Desktop/sdp_python/datasets/Advertisement-Banners-3-2/train
+val: /Users/elcan/Desktop/sdp_python/datasets/Advertisement-Banners-3-2/valid
+test: /Users/elcan/Desktop/sdp_python/datasets/Advertisement-Banners-3-2/test
+
+nc: 1
+names: ['banner']
+
+roboflow:
+  workspace: vagifs-workspace
+  project: advertisement-banners-3
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/vagifs-workspace/advertisement-banners-3/dataset/2
