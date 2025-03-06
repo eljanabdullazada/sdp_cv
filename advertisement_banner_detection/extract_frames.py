@@ -30,4 +30,4 @@ def extract_frames(video_path, frame_dir, nth_frame=30):
 
 # Example usage:
 if __name__ == "__main__":
-    extract_frames("data/videos/dashcam_video.mp4", "data/frames", nth_frame=30)
+    extract_frames("C:\Users\user\Desktop\sdp_cv-1\advertisement_banner_detection\data\videos\dashcam_video.mp4", "data/frames", nth_frame=30)
