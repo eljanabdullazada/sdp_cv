@@ -7,7 +7,7 @@ model = YOLO("best-341-1600x896.pt")
 names = model.names
 
 # Open the video file or webcam
-cap = cv2.VideoCapture('test.MP4')
+cap = cv2.VideoCapture('test-2.mov')
 
 while True:
     # Read a frame from the video
