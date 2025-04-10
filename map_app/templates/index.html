@@ -10,7 +10,6 @@
 
     <!-- Inline CSS -->
     <style>
-        /* Ensure HTML and body take up the full height */
         html, body {
             height: 100%;
             margin: 0;
@@ -19,7 +18,7 @@
 
         #map {
             width: 100%;
-            height: 100vh; /* Full viewport height */
+            height: 100vh;
         }
 
         #imageDisplay {
@@ -40,77 +39,76 @@
     {% else %}
         <h1>Locations for Video: {{ video_id }}</h1>
 
-        <!-- Error message for invalid ID -->
         <div id="error-message" class="error-message" style="display: none;"></div>
 
-        <!-- Map container -->
         <div id="map"></div>
 
-        <!-- Image display below the map -->
         <div id="imageDisplay"></div>
     {% endif %}
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <!-- Inline JavaScript -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var video_id = "{{ video_id }}";  // Use the video_id from Flask
+    document.addEventListener("DOMContentLoaded", function () {
+        var video_id = "{{ video_id }}";  // Use the video_id from Flask
 
-            if (video_id) {
-                // Fetch locations for the given video_id
-                fetch(`/locations_data/${video_id}`)
-                    .then(response => response.json())
-                    .then(locations => {
-                        if (locations.length === 0) {
-                            // If no locations found, show an error message
-                            document.getElementById('error-message').style.display = 'block';
-                            document.getElementById('error-message').textContent = "No locations found for the given video ID.";
-                        } else {
-                            // Hide error message if locations are found
-                            document.getElementById('error-message').style.display = 'none';
-
-                            // Initialize the map centered over Baku, Azerbaijan.
-                            var map = L.map('map').setView([40.4093, 49.8671], 12);  // Baku coordinates
-
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                maxZoom: 18,
-                                attribution: '© OpenStreetMap contributors'
-                            }).addTo(map);
-
-                            // Add a marker for each location
-                            locations.forEach(function (loc) {
-                                var marker = L.marker([loc.lat, loc.lng]).addTo(map);
-                                marker.on('click', function () {
-                                    // When marker is clicked, fetch the corresponding image from the server.
-                                    fetch(`/location/${loc.id}`)
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.image_link) {
-                                                document.getElementById('imageDisplay').innerHTML =
-                                                    '<img src="' + data.image_link + '" alt="Location Image" style="max-width:100%; height:auto;">';
-                                            } else {
-                                                alert('Image not found');
-                                            }
-                                        })
-                                        .catch(error => console.error('Error fetching image:', error));
-                                });
-                            });
-
-                            // Fix map resize on window resizing
-                            window.addEventListener('resize', function () {
-                                map.invalidateSize();
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching locations:', error);
+        if (video_id) {
+            // Fetch locations for the given video_id
+            fetch(`/locations_data/${video_id}`)
+                .then(response => response.json())
+                .then(locations => {
+                    if (locations.length === 0) {
+                        // If no locations found, show an error message
                         document.getElementById('error-message').style.display = 'block';
-                        document.getElementById('error-message').textContent = "An error occurred while fetching locations.";
-                    });
-            }
-        });
-    </script>
+                        document.getElementById('error-message').textContent = "No locations found for the given video ID.";
+                    } else {
+                        // Hide error message if locations are found
+                        document.getElementById('error-message').style.display = 'none';
+
+                        // Initialize the map centered over Baku, Azerbaijan.
+                        var map = L.map('map').setView([40.4093, 49.8671], 12);  // Baku coordinates
+
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 18,
+                            attribution: '© OpenStreetMap contributors'
+                        }).addTo(map);
+
+                        // Add a marker for each location
+                        locations.forEach(function (loc) {
+                            var marker = L.marker([loc.lat, loc.lng]).addTo(map);
+                            marker.on('click', function () {
+                                // When marker is clicked, fetch the corresponding image from the server.
+                                fetch(`/location/${loc.id}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.image_link) {
+                                            // Ensure the image link is correctly referenced
+                                            var imageUrl = "/" + data.image_link;  // Adjusted to serve images from the static folder
+                                            document.getElementById('imageDisplay').innerHTML =
+                                                '<img src="' + imageUrl + '" alt="Location Image" style="max-width:100%; height:auto;">';
+                                        } else {
+                                            alert('Image not found');
+                                        }
+                                    })
+                                    .catch(error => console.error('Error fetching image:', error));
+                            });
+                        });
+
+                        // Fix map resize on window resizing
+                        window.addEventListener('resize', function () {
+                            map.invalidateSize();
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching locations:', error);
+                    document.getElementById('error-message').style.display = 'block';
+                    document.getElementById('error-message').textContent = "An error occurred while fetching locations.";
+                });
+        }
+    });
+</script>
+
 </body>
 </html>

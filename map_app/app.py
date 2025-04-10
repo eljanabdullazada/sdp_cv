@@ -32,7 +32,7 @@ def locations_data(video_id):
         'id': loc.id,
         'lat': loc.latitude,
         'lng': loc.longitude,
-        'image_link': loc.image_link
+        'image_link': loc.image_link  # Relative path to image in static folder
     } for loc in locations]
     return jsonify(locations_list)
 
@@ -40,7 +40,7 @@ def locations_data(video_id):
 def get_location(location_id):
     location = Location.query.get(location_id)
     if location:
-        return jsonify({'image_link': location.image_link})
+        return jsonify({'image_link': location.image_link})  # Return the relative path to image
     return jsonify({'error': 'Location not found'}), 404
 
 if __name__ == '__main__':
