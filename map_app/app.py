@@ -2,10 +2,20 @@ from flask import Flask, render_template, request, jsonify, send_from_directory,
 from werkzeug.utils import secure_filename
 import os
 from db import create_table
-from main import generate_detection_stream, stop_live_detection
+from main import generate_stream, stop_live_detection, detect_banners
+from models import db
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# Add your PostgreSQL connection string here
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://elcan:yourpassword@localhost:5432/banner_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize SQLAlchemy with the app
+db.init_app(app)
+
+# File handling configurations
 app.config['UPLOAD_FOLDER'] = 'videos'
 app.config['DETECTED_FOLDER'] = 'static/detected_banners'
 
@@ -14,7 +24,9 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['DETECTED_FOLDER'], exist_ok=True)
 
 # Create the table in DB if it doesn't exist
-create_table()
+with app.app_context():
+    create_table()
+    db.create_all()
 
 @app.route('/')
 def index():
@@ -38,10 +50,9 @@ def get_video(filename):
 def video_feed():
     filename = request.args.get("filename")
     if not filename:
-        return "No video filename provided", 400
-    video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    return Response(generate_detection_stream(video_path),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+        return "Missing filename", 400
+    filename = secure_filename(filename)
+    return Response(generate_stream(filename), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/stop_detection', methods=['POST'])
 def stop_detection():
@@ -59,6 +70,17 @@ def get_existing_videos():
     videos = [f for f in os.listdir(videos_folder)
               if os.path.isfile(os.path.join(videos_folder, f)) and f.endswith(('.mp4', '.avi', '.mov'))]
     return jsonify(videos)
+
+@app.route('/detect', methods=['POST'])
+def run_detection():
+    data = request.get_json()
+    filename = data.get('filename')
+    if not filename:
+        return jsonify({"error": "No filename provided"}), 400
+
+    video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    detect_banners(video_path)  # This saves the crops and updates DB
+    return jsonify({"status": "Detection complete"})
 
 @app.route('/delete', methods=['POST'])
 def delete_video():

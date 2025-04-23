@@ -94,12 +94,10 @@ function detectBanners() {
     detectBtn.disabled = true;
     detectBtn.textContent = "Detecting...";
 
-    // Start the MJPEG live stream
+    // Show detection stream and hide video player
     const stream = document.getElementById("videoStream");
     stream.src = `/video_feed?filename=${encodeURIComponent(selectedVideo)}`;
     document.getElementById("streamContainer").style.display = "block";
-
-    // Hide regular video player
     document.getElementById("videoPlayer").hidden = true;
 
     fetch("/detect", {
@@ -107,12 +105,26 @@ function detectBanners() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename: selectedVideo })
     })
-    .catch(() => alert("Detection failed!"))
+    .then(res => {
+        if (!res.ok) throw new Error("Detection failed");
+        return res.json();
+    })
+    .then(data => {
+        console.log("Detection started successfully:", data);
+    })
+    .catch((err) => {
+        alert("Detection failed!");
+        console.error("Detection error:", err);
+        document.getElementById("streamContainer").style.display = "none";
+        stream.src = "";
+    })
     .finally(() => {
         detectBtn.disabled = false;
         detectBtn.textContent = "Detect Banners";
     });
 }
+
+
 
 function stopDetection() {
     fetch('/stop_detection', { method: 'POST' })

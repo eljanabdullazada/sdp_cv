@@ -1,55 +1,37 @@
 import cv2
 import os
 import random
-import psycopg2
 import cvzone
 from ultralytics import YOLO
-
-# ------------------------- CONFIG -------------------------
-DB_CONFIG = {
-    "host": "localhost",
-    "user": "elcan",
-    "password": "yourpassword",
-    "dbname": "banner_db",
-    "port": 5432
-}
+from db import insert_banner_data
+from models import Location, db  # assuming models.py contains SQLAlchemy Location model
 
 model = YOLO("best-341-1600x896.pt")
 names = model.names
-stop_detection = False
+output_dir = "static/detected_banners"
+os.makedirs(output_dir, exist_ok=True)
 
-# ------------------------- DATABASE -------------------------
-def save_to_database(video_id, latitude, longitude, image_link):
-    conn = None
-    cursor = None
-    try:
-        conn = psycopg2.connect(**DB_CONFIG)
-        cursor = conn.cursor()
+stop_detection = False  # Optional flag if needed later
 
-        query = """
-        INSERT INTO locations (video_id, latitude, longitude, image_link)
-        VALUES (%s, %s, %s, %s)
-        """
-        cursor.execute(query, (str(video_id), latitude, longitude, image_link))
-        conn.commit()
 
-        print(f"Saved to database: {image_link}")
+def save_to_database(video_id, latitude, longitude, image_path):
+    location = Location(
+        video_name=str(video_id),
+        latitude=latitude,
+        longitude=longitude,
+        image_path=image_path
+    )
+    db.session.add(location)
+    db.session.commit()
+    print(f"[DB] Saved: {image_path}")
 
-    except psycopg2.Error as err:
-        print(f"Error: {err}")
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
-# ------------------------- DETECTION: IMAGE + DB SAVE -------------------------
+
 def detect_banners(video_path):
-    global model, names
-
     cap = cv2.VideoCapture(video_path)
     width, height = 1600, 896
     best_frames = {}
+    video_name = os.path.basename(video_path)
 
     while True:
         ret, frame = cap.read()
@@ -57,16 +39,59 @@ def detect_banners(video_path):
             break
 
         frame = cv2.resize(frame, (width, height))
-        results = model.track(frame, persist=True)
+        results = model.predict(frame, verbose=False)  # Use predict instead of track
 
-        if results[0].boxes is not None and results[0].boxes.id is not None:
+        if results[0].boxes and results[0].boxes.id is not None:
             boxes = results[0].boxes.xyxy.int().cpu().tolist()
             class_ids = results[0].boxes.cls.int().cpu().tolist()
-            track_ids = results[0].boxes.id.int().cpu().tolist()
+            track_ids = results[0].boxes.id.int().cpu().tolist() if results[0].boxes.id is not None else [0] * len(boxes)
             confidences = results[0].boxes.conf.cpu().tolist()
 
             for box, class_id, track_id, conf in zip(boxes, class_ids, track_ids, confidences):
-                c = names[class_id]
+                x1, y1, x2, y2 = box
+                area = (x2 - x1) * (y2 - y1)
+
+                if track_id not in best_frames or area > best_frames[track_id]["area"]:
+                    best_frames[track_id] = {
+                        "frame": frame.copy(),
+                        "box": (x1, y1, x2, y2),
+                        "area": area
+                    }
+
+    cap.release()
+
+    for track_id, data in best_frames.items():
+        x1, y1, x2, y2 = data["box"]
+        banner_crop = data["frame"][y1:y2, x1:x2]
+        image_path = f"{output_dir}/banner_{track_id}_best.jpg"
+        cv2.imwrite(image_path, banner_crop)
+
+        lat = round(random.uniform(40.3700, 40.4400), 6)
+        lon = round(random.uniform(49.8000, 49.9000), 6)
+        save_to_database(video_id=video_name, latitude=lat, longitude=lon, image_path=image_path)
+
+    return "done"
+
+
+
+def generate_stream(filename):
+    cap = cv2.VideoCapture(os.path.join("videos", filename))
+    best_frames = {}
+
+    while cap.isOpened():
+        success, frame = cap.read()
+        if not success:
+            break
+
+        frame = cv2.resize(frame, (1600, 896))
+        results = model.track(frame, persist=True)
+
+        if results[0].boxes and results[0].boxes.id is not None:
+            boxes = results[0].boxes.xyxy.int().cpu().tolist()
+            class_ids = results[0].boxes.cls.int().cpu().tolist()
+            track_ids = results[0].boxes.id.int().cpu().tolist()
+
+            for box, class_id, track_id in zip(boxes, class_ids, track_ids):
                 x1, y1, x2, y2 = box
                 area = (x2 - x1) * (y2 - y1)
 
@@ -78,66 +103,26 @@ def detect_banners(video_path):
                     }
 
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                cvzone.putTextRect(frame, f'{c}', (x1, y1 - 10), 1, 1)
+                cvzone.putTextRect(frame, f'{names[class_id]}', (x1, y1 - 10), 1, 1)
 
-        cv2.imshow("Detection Process", frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        # Encode as JPEG and yield
+        _, jpeg = cv2.imencode('.jpg', frame)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
 
     cap.release()
-    cv2.destroyAllWindows()
-
-    output_dir = "static/detected_banners"
-    os.makedirs(output_dir, exist_ok=True)
 
     for track_id, data in best_frames.items():
         x1, y1, x2, y2 = data["box"]
-        latitude = round(random.uniform(40.3700, 40.4400), 6)
-        longitude = round(random.uniform(49.8000, 49.9000), 6)
         banner_crop = data["frame"][y1:y2, x1:x2]
-        image_link = f"{output_dir}/banner_{track_id}_best.jpg"
-        cv2.imwrite(image_link, banner_crop)
-        save_to_database(os.path.basename(video_path), latitude, longitude, image_link)
+        image_path = f"{output_dir}/banner_{track_id}_best.jpg"
+        cv2.imwrite(image_path, banner_crop)
 
-    return "done"
+        lat = round(random.uniform(40.3700, 40.4400), 6)
+        lon = round(random.uniform(49.8000, 49.9000), 6)
+        save_to_database(video_id=filename, latitude=lat, longitude=lon, image_path=image_path)
 
-# ------------------------- STREAMING DETECTION -------------------------
-def generate_detection_stream(video_path):
-    global stop_detection, model, names
-    stop_detection = False
-    cap = cv2.VideoCapture(video_path)
-    width, height = 1600, 896
 
-    while cap.isOpened():
-        if stop_detection:
-            break
-
-        success, frame = cap.read()
-        if not success:
-            break
-
-        frame = cv2.resize(frame, (width, height))
-        results = model.track(frame, persist=True)
-
-        if results[0].boxes is not None and results[0].boxes.id is not None:
-            boxes = results[0].boxes.xyxy.int().cpu().tolist()
-            class_ids = results[0].boxes.cls.int().cpu().tolist()
-
-            for box, class_id in zip(boxes, class_ids):
-                x1, y1, x2, y2 = box
-                label = names[class_id]
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                cvzone.putTextRect(frame, label, (x1, y1 - 10), 1, 1)
-
-        _, buffer = cv2.imencode('.jpg', frame)
-        frame_bytes = buffer.tobytes()
-
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-    cap.release()
-
-# ------------------------- STOP STREAM FLAG -------------------------
 def stop_live_detection():
     global stop_detection
     stop_detection = True
