@@ -1,47 +1,47 @@
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
+from werkzeug.utils import secure_filename
 import os
-from db import db, Location
-
-# Load environment variables
-load_dotenv()
+from db import create_table, insert_banner_data, get_all_banner_data
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'videos'
+app.config['DETECTED_FOLDER'] = 'static/detected_banners'
 
-# PostgreSQL Database URI
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize database
-db.init_app(app)
-
-# Create tables if they don't exist
-with app.app_context():
-    db.create_all()
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['DETECTED_FOLDER'], exist_ok=True)
+create_table()
 
 @app.route('/')
 def index():
-    video_id = request.args.get('video_id')
-    return render_template('index.html', video_id=video_id)
+    return render_template('index.html')
 
-@app.route('/locations_data/<video_id>')
-def locations_data(video_id):
-    locations = Location.query.filter_by(video_id=video_id).all()
-    locations_list = [{
-        'id': loc.id,
-        'lat': loc.latitude,
-        'lng': loc.longitude,
-        'image_link': loc.image_link  # Relative path to image in static folder
-    } for loc in locations]
-    return jsonify(locations_list)
+@app.route('/upload', methods=['POST'])
+def upload_video():
+    file = request.files['video']
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        return jsonify({'filename': filename})
+    return 'No file uploaded', 400
 
-@app.route('/location/<int:location_id>')
-def get_location(location_id):
-    location = Location.query.get(location_id)
-    if location:
-        return jsonify({'image_link': location.image_link})  # Return the relative path to image
-    return jsonify({'error': 'Location not found'}), 404
+@app.route('/video/<filename>')
+def get_video(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/detect', methods=['POST'])
+def detect():
+    from main import detect_banners
+    video_filename = request.json['filename']
+    video_path = os.path.join(app.config['UPLOAD_FOLDER'], video_filename)
+    detect_banners(video_path)
+    return 'Detection complete'
+
+@app.route('/locations')
+def locations():
+    video_id = request.args.get('video', '')
+    return render_template('locations.html', video_id=video_id)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

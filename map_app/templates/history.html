@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>Upload History</title></head>
+<body>
+  <h2>Upload History</h2>
+  <ul>
+    {% for video in videos %}
+      <li>{{ video[0] }}</li>
+    {% endfor %}
+  </ul>
+  <a href="/">Back</a>
+</body>
+</html>

@@ -1,11 +1,43 @@
-from flask_sqlalchemy import SQLAlchemy
+import psycopg2
 
-db = SQLAlchemy()
+def get_connection():
+    return psycopg2.connect(
+        dbname='banner_db',
+        user='elcan',
+        password='yourpassword',
+        host='localhost',
+        port='5432'
+    )
 
-class Location(db.Model):
-    __tablename__ = 'locations'
-    id = db.Column(db.Integer, primary_key=True)
-    video_id = db.Column(db.String(50), nullable=False)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
-    image_link = db.Column(db.String(255), nullable=False)
+def create_table():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS banners (
+            id SERIAL PRIMARY KEY,
+            image_path TEXT,
+            latitude FLOAT,
+            longitude FLOAT
+        );
+    ''')
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def insert_banner_data(image_path, latitude, longitude):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO banners (image_path, latitude, longitude) VALUES (%s, %s, %s);',
+                (image_path, latitude, longitude))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def get_all_banner_data():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT image_path, latitude, longitude FROM banners;')
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return [{'image': row[0], 'lat': row[1], 'lon': row[2]} for row in rows]

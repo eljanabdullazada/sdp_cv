@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head><title>Admin Panel</title></head>
+<body>
+  <h2>Admin Panel</h2>
+  <table border="1">
+    <tr><th>ID</th><th>Video</th><th>Image</th></tr>
+    {% for b in banners %}
+      <tr>
+        <td>{{ b[0] }}</td>
+        <td>{{ b[1] }}</td>
+        <td>
+          <img src="{{ url_for('static', filename=b[2].split('static/')[1]) }}" width="150">
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+  <a href="/">Back</a>
+</body>
+</html>

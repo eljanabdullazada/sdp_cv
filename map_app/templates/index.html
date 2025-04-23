@@ -2,113 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Locations Map</title>
-
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-    <!-- Inline CSS -->
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        #map {
-            width: 100%;
-            height: 100vh;
-        }
-
-        #imageDisplay {
-            margin-top: 20px;
-            text-align: center;
-        }
-    </style>
+    <title>Banner Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    {% if not video_id %}
-        <div id="searchForm">
-            <h1>Search for a Video</h1>
-            <form method="get" action="/">
-                <input type="text" name="video_id" placeholder="Enter video id" required>
-                <button type="submit">Search</button>
-            </form>
-        </div>
-    {% else %}
-        <h1>Locations for Video: {{ video_id }}</h1>
 
-        <div id="error-message" class="error-message" style="display: none;"></div>
+<div id="controls">
+    <input type="file" id="fileInput" onchange="updateFileName()">
+    <label for="fileInput" id="fileLabel">Choose a file</label>
 
-        <div id="map"></div>
+    <button onclick="uploadVideo()">Upload Video</button>
 
-        <div id="imageDisplay"></div>
-    {% endif %}
+    <select id="videoList" onchange="selectVideo()"></select>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <button onclick="playVideo()">Play Video</button>
+    <button onclick="detectBanners()">Detect Banners</button>
+    <button onclick="showLocations()">Show Locations</button>
+    <button id="DeleteButton" onclick="deleteVideo()">Delete Selected Video</button>
+</div>
 
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var video_id = "{{ video_id }}";  // Use the video_id from Flask
+<div id="playerContainer">
+    <video id="videoPlayer" hidden controls></video>
+    <span id="closeButton" onclick="stopVideo()">&#10006;</span>
+</div>
 
-        if (video_id) {
-            // Fetch locations for the given video_id
-            fetch(`/locations_data/${video_id}`)
-                .then(response => response.json())
-                .then(locations => {
-                    if (locations.length === 0) {
-                        // If no locations found, show an error message
-                        document.getElementById('error-message').style.display = 'block';
-                        document.getElementById('error-message').textContent = "No locations found for the given video ID.";
-                    } else {
-                        // Hide error message if locations are found
-                        document.getElementById('error-message').style.display = 'none';
 
-                        // Initialize the map centered over Baku, Azerbaijan.
-                        var map = L.map('map').setView([40.4093, 49.8671], 12);  // Baku coordinates
-
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            maxZoom: 18,
-                            attribution: '© OpenStreetMap contributors'
-                        }).addTo(map);
-
-                        // Add a marker for each location
-                        locations.forEach(function (loc) {
-                            var marker = L.marker([loc.lat, loc.lng]).addTo(map);
-                            marker.on('click', function () {
-                                // When marker is clicked, fetch the corresponding image from the server.
-                                fetch(`/location/${loc.id}`)
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        if (data.image_link) {
-                                            // Ensure the image link is correctly referenced
-                                            var imageUrl = "/" + data.image_link;  // Adjusted to serve images from the static folder
-                                            document.getElementById('imageDisplay').innerHTML =
-                                                '<img src="' + imageUrl + '" alt="Location Image" style="max-width:100%; height:auto;">';
-                                        } else {
-                                            alert('Image not found');
-                                        }
-                                    })
-                                    .catch(error => console.error('Error fetching image:', error));
-                            });
-                        });
-
-                        // Fix map resize on window resizing
-                        window.addEventListener('resize', function () {
-                            map.invalidateSize();
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching locations:', error);
-                    document.getElementById('error-message').style.display = 'block';
-                    document.getElementById('error-message').textContent = "An error occurred while fetching locations.";
-                });
-        }
-    });
-</script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 </html>
