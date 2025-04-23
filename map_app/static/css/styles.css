@@ -10,7 +10,7 @@ html, body {
     background-position: center;
     background-repeat: no-repeat;
     color: #333;
-    overflow: hidden;  /* Prevent scrolling */
+    overflow: hidden;
 }
 
 /* Controls container */
@@ -44,7 +44,6 @@ button:hover, #fileLabel:hover {
     background-color: #174b5f;
 }
 
-/* Special styles */
 #DeleteButton {
     background-color: #c0392b;
 }
@@ -53,7 +52,6 @@ button:hover, #fileLabel:hover {
     background-color: #922b21;
 }
 
-/* Hidden file input */
 #fileInput {
     display: none;
 }
@@ -72,9 +70,10 @@ select {
     position: relative;
     margin: 30px auto;
     max-width: 90%;
-    display: flex;
-    justify-content: center;
+    width: 100%;
+    max-width: 800px;
 }
+
 
 /* Video Element */
 #videoPlayer {
@@ -91,9 +90,9 @@ select {
 #closeButton {
     position: absolute;
     top: 10px;
-    right: 5%;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
+    right: 10px;
+    background-color: rgb(10, 126, 126);
+    color: #ffffff;
     padding: 8px 12px;
     cursor: pointer;
     font-size: 18px;
@@ -102,6 +101,7 @@ select {
     display: none;
 }
 
+/* Show only when video is visible */
 #videoPlayer:not([hidden]) ~ #closeButton {
     display: block;
 }
@@ -110,7 +110,7 @@ select {
 #streamContainer {
     display: none;
     margin: 30px auto;
-    padding: 20px;
+    padding: 10px;
     background-color: rgba(255, 255, 255, 0.9);
     width: 100%;
     max-width: 800px;
@@ -118,8 +118,8 @@ select {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     position: relative;
     height: auto;
-    max-height: 80vh; /* Ensure detection stream fits on screen */
-    overflow: hidden; /* Prevent scrolling */
+    max-height: 80vh;
+    overflow: hidden;
 }
 
 #streamContainer h3 {
@@ -127,7 +127,6 @@ select {
     color: #00303f;
 }
 
-/* Live detection video frame */
 #videoStream {
     width: 100%;
     height: auto;
@@ -135,24 +134,18 @@ select {
     border: 2px solid #256D85;
 }
 
-/* Close button (for detection stream) */
+/* Close button for detection stream */
 #streamCloseButton {
     position: absolute;
     top: 10px;
     right: 10px;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
+    background-color: rgb(10, 126, 126);
+    color: #ffffff;
     padding: 8px 12px;
     cursor: pointer;
     font-size: 18px;
     border-radius: 4px;
     z-index: 10;
-    display: none;
-}
-
-/* Show close button for detection stream */
-#streamContainer:not([hidden]) ~ #streamCloseButton {
-    display: block;
 }
 
 /* Responsive Tweaks */
@@ -177,7 +170,7 @@ select {
     }
 
     #streamContainer {
-        max-width: 90%;
+        max-width: 100%;
         padding: 15px;
     }
 }
