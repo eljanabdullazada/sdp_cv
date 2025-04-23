@@ -4,14 +4,15 @@ import random
 import cvzone
 from ultralytics import YOLO
 from db import insert_banner_data
-from models import Location, db  # assuming models.py contains SQLAlchemy Location model
+from models import Location, db
+from flask import current_app
 
 model = YOLO("best-341-1600x896.pt")
 names = model.names
 output_dir = "static/detected_banners"
 os.makedirs(output_dir, exist_ok=True)
 
-stop_detection = False  # Optional flag if needed later
+stop_detection = False
 
 
 def save_to_database(video_id, latitude, longitude, image_path):
@@ -39,7 +40,7 @@ def detect_banners(video_path):
             break
 
         frame = cv2.resize(frame, (width, height))
-        results = model.predict(frame, verbose=False)  # Use predict instead of track
+        results = model.predict(frame, verbose=False)
 
         if results[0].boxes and results[0].boxes.id is not None:
             boxes = results[0].boxes.xyxy.int().cpu().tolist()
@@ -76,8 +77,6 @@ def detect_banners(video_path):
 
 def generate_stream(filename):
     cap = cv2.VideoCapture(os.path.join("videos", filename))
-    best_frames = {}
-
     while cap.isOpened():
         success, frame = cap.read()
         if not success:
@@ -93,34 +92,15 @@ def generate_stream(filename):
 
             for box, class_id, track_id in zip(boxes, class_ids, track_ids):
                 x1, y1, x2, y2 = box
-                area = (x2 - x1) * (y2 - y1)
-
-                if track_id not in best_frames or area > best_frames[track_id]["area"]:
-                    best_frames[track_id] = {
-                        "frame": frame.copy(),
-                        "box": (x1, y1, x2, y2),
-                        "area": area
-                    }
-
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                 cvzone.putTextRect(frame, f'{names[class_id]}', (x1, y1 - 10), 1, 1)
 
-        # Encode as JPEG and yield
         _, jpeg = cv2.imencode('.jpg', frame)
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
 
     cap.release()
 
-    for track_id, data in best_frames.items():
-        x1, y1, x2, y2 = data["box"]
-        banner_crop = data["frame"][y1:y2, x1:x2]
-        image_path = f"{output_dir}/banner_{track_id}_best.jpg"
-        cv2.imwrite(image_path, banner_crop)
-
-        lat = round(random.uniform(40.3700, 40.4400), 6)
-        lon = round(random.uniform(49.8000, 49.9000), 6)
-        save_to_database(video_id=filename, latitude=lat, longitude=lon, image_path=image_path)
 
 
 def stop_live_detection():

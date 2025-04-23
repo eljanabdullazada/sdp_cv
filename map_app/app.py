@@ -8,7 +8,6 @@ from models import db
 # Initialize Flask app
 app = Flask(__name__)
 
-# Add your PostgreSQL connection string here
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://elcan:yourpassword@localhost:5432/banner_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
