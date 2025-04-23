@@ -17,6 +17,7 @@
 
     <button onclick="playVideo()">Play Video</button>
     <button onclick="detectBanners()">Detect Banners</button>
+    <button onclick="stopDetection()">Stop Detection</button>
     <button onclick="showLocations()">Show Locations</button>
     <button id="DeleteButton" onclick="deleteVideo()">Delete Selected Video</button>
 </div>
@@ -29,7 +30,7 @@
 <!-- Live Detection Preview (stream from /video_feed) -->
 <div id="streamContainer" style="display: none; margin-top: 20px;">
     <h3>Live Detection Preview</h3>
-    <img id="videoStream" src="" alt="Detection preview will appear here" width="100%" />
+    <img id="videoStream" src="" alt="Detection preview will appear here" width="60%" />
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

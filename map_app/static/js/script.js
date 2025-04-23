@@ -206,3 +206,14 @@ function updateVideoList() {
     });
 }
 
+function stopDetection() {
+    fetch('/stop_detection', { method: 'POST' })
+        .then(() => {
+            document.getElementById("streamContainer").style.display = "none";
+            document.getElementById("videoStream").src = ""; // Kill stream
+            alert("Detection stopped.");
+        })
+        .catch(err => {
+            console.error("Error stopping detection:", err);
+        });
+}

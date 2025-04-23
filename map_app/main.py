@@ -1,10 +1,11 @@
 import cv2
 import os
-from ultralytics import YOLO
-import cvzone
-import psycopg2
 import random
+import psycopg2
+import cvzone
+from ultralytics import YOLO
 
+# ------------------------- CONFIG -------------------------
 DB_CONFIG = {
     "host": "localhost",
     "user": "elcan",
@@ -13,6 +14,11 @@ DB_CONFIG = {
     "port": 5432
 }
 
+model = YOLO("best-341-1600x896.pt")
+names = model.names
+stop_detection = False
+
+# ------------------------- DATABASE -------------------------
 def save_to_database(video_id, latitude, longitude, image_link):
     conn = None
     cursor = None
@@ -37,14 +43,12 @@ def save_to_database(video_id, latitude, longitude, image_link):
         if conn:
             conn.close()
 
-
+# ------------------------- DETECTION: IMAGE + DB SAVE -------------------------
 def detect_banners(video_path):
-    model = YOLO("best-341-1600x896.pt")
-    names = model.names
+    global model, names
 
     cap = cv2.VideoCapture(video_path)
     width, height = 1600, 896
-
     best_frames = {}
 
     while True:
@@ -76,7 +80,6 @@ def detect_banners(video_path):
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                 cvzone.putTextRect(frame, f'{c}', (x1, y1 - 10), 1, 1)
 
-        # Show frame in real-time
         cv2.imshow("Detection Process", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -98,3 +101,43 @@ def detect_banners(video_path):
 
     return "done"
 
+# ------------------------- STREAMING DETECTION -------------------------
+def generate_detection_stream(video_path):
+    global stop_detection, model, names
+    stop_detection = False
+    cap = cv2.VideoCapture(video_path)
+    width, height = 1600, 896
+
+    while cap.isOpened():
+        if stop_detection:
+            break
+
+        success, frame = cap.read()
+        if not success:
+            break
+
+        frame = cv2.resize(frame, (width, height))
+        results = model.track(frame, persist=True)
+
+        if results[0].boxes is not None and results[0].boxes.id is not None:
+            boxes = results[0].boxes.xyxy.int().cpu().tolist()
+            class_ids = results[0].boxes.cls.int().cpu().tolist()
+
+            for box, class_id in zip(boxes, class_ids):
+                x1, y1, x2, y2 = box
+                label = names[class_id]
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                cvzone.putTextRect(frame, label, (x1, y1 - 10), 1, 1)
+
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+    cap.release()
+
+# ------------------------- STOP STREAM FLAG -------------------------
+def stop_live_detection():
+    global stop_detection
+    stop_detection = True
