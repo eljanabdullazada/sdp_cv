@@ -1,35 +1,38 @@
+/* Base Styles */
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
     background-image: url('https://images.pexels.com/photos/531880/pexels-photo-531880.jpeg?cs=srgb&dl=pexels-pixabay-531880.jpg&fm=jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    color: #333;
 }
 
 /* Controls container */
 #controls {
     margin: 20px auto;
     padding: 20px;
-    background-color: #0a7e7e;
-    color: white;
-    border-radius: 8px;
-    width: fit-content;
+    background-color: rgba(0, 71, 102, 0.9);
+    color: #fff;
+    border-radius: 10px;
+    max-width: 90%;
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
+    justify-content: center;
     align-items: center;
 }
 
-/* Button & label styling */
+/* Buttons & Labels */
 button, #fileLabel {
-    background-color: #4CAF50;
-    color: white;
-    padding: 12px 25px;
-    border-radius: 5px;
+    background-color: #256D85;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 6px;
     border: none;
     cursor: pointer;
     font-size: 16px;
@@ -37,20 +40,24 @@ button, #fileLabel {
 }
 
 button:hover, #fileLabel:hover {
-    background-color: #066e0a;
+    background-color: #174b5f;
 }
 
-/* File input styling */
+/* Special styles */
+#DeleteButton {
+    background-color: #c0392b;
+}
+
+#DeleteButton:hover {
+    background-color: #922b21;
+}
+
+/* Hidden file input */
 #fileInput {
     display: none;
 }
 
-/* Custom delete button */
-#DeleteButton {
-    background-color: #9C1A1C;
-}
-
-/* Select dropdown */
+/* Dropdown */
 select {
     padding: 12px;
     font-size: 16px;
@@ -59,25 +66,31 @@ select {
     cursor: pointer;
 }
 
+/* Video Player Container */
 #playerContainer {
     position: relative;
-    margin: 20px auto;
-    width: 600px;
+    margin: 30px auto;
+    max-width: 90%;
+    display: flex;
+    justify-content: center;
 }
 
+/* Video Element */
 #videoPlayer {
-    width: auto;
-    height: 600px;
+    width: 100%;
+    max-width: 800px;
     background-color: #000;
-    border: 3px solid #4CAF50;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    border: 2px solid #256D85;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    aspect-ratio: 16 / 9;
 }
 
+/* Close Button */
 #closeButton {
     position: absolute;
     top: 10px;
-    right: 10px;
+    right: 5%;
     background-color: rgba(0, 0, 0, 0.6);
     color: white;
     padding: 8px 12px;
@@ -90,4 +103,50 @@ select {
 
 #videoPlayer:not([hidden]) ~ #closeButton {
     display: block;
+}
+
+/* Detection Stream Container */
+#streamContainer {
+    display: none;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    max-width: 90%;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+#streamContainer h3 {
+    margin-top: 0;
+    color: #00303f;
+}
+
+/* Live detection video frame */
+#videoStream {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 2px solid #256D85;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+    #controls {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    #videoPlayer {
+        width: 100%;
+        height: auto;
+    }
+
+    #videoStream {
+        width: 100%;
+    }
+
+    button, #fileLabel, select {
+        width: 90%;
+        padding: 10px;
+    }
 }
