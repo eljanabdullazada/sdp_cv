@@ -135,10 +135,16 @@ function stopDetection() {
         .catch(err => console.error("Error stopping detection:", err));
 }
 
-function showLocations() {
-    if (!selectedVideo) return alert("No video selected!");
-    window.location.href = `/locations?video=${encodeURIComponent(selectedVideo)}`;
+function showLocationsPage() {
+    const videoSelect = document.getElementById("videoList");
+    const selectedVideo = videoSelect.value;
+    if (!selectedVideo) {
+        alert("Please select a video first.");
+        return;
+    }
+    window.location.href = `/locations?video=${selectedVideo}`;
 }
+
 
 function deleteVideo() {
     if (!selectedVideo) return alert("No video selected!");

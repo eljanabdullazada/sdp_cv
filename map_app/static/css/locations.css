@@ -10,13 +10,13 @@ h1 {
     padding: 10px 20px;
     margin: 5px;
     text-align: center;
-    color: #333;
+    color: #ffffff; /* White color for header */
 }
 
 #error-message {
     margin: 20px;
     padding: 10px;
-    color: red;
+    color: #c0392b; /* Red color for error messages */
     font-weight: bold;
     text-align: center;
 }
@@ -33,37 +33,35 @@ h1 {
 #map {
     width: 60%;
     height: 100%;
-    border: 3px solid #4CAF50;
+    border: 3px solid #256D85; /* Dark blue border */
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 #imageDisplay {
-    width: 40%;
-    height: 100%;
+    width: 500px;
+    height: 600px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px;
-    background-color: #fff;
+    background-color: rgba(0, 71, 102, 0.9);
     border-radius: 8px;
-    border: 2px solid #ccc;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin: auto;
 }
 
 #imageDisplay img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    border-radius: 6px;
 }
 
 .nav-button {
     display: inline-block;
     padding: 8px 14px;
-    background-color: #f0f0f0;
-    border: 1px solid #45a049;
-    color: #333;
+    background-color: #256D85;
+    border: 1px solid #174b5f;
+    color: #ffffff;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
@@ -72,15 +70,16 @@ h1 {
 }
 
 .nav-button:hover {
-    background-color: #ddd;
+    background-color: rgba(0, 71, 102, 0.9);
 }
 
 .header-bar {
     display: flex;
+    margin-bottom: 10px;
     justify-content: space-between;
     align-items: center;
-    background-color: #fff;
+    background-color: #004766E6; /* Dark blue background */
     padding: 10px 20px;
-    border-bottom: 2px solid #4CAF50;
+    border-bottom: 2px solid #174b5f; /* Darker blue bottom border */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
