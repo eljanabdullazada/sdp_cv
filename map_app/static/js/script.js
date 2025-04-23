@@ -1,11 +1,20 @@
 let uploadedVideos = JSON.parse(localStorage.getItem("uploadedVideos")) || [];
 let selectedVideo = "";
 
+// Update file name when a file is chosen for upload
 function updateFileName() {
     const fileInput = document.getElementById("fileInput");
     const fileLabel = document.getElementById("fileLabel");
-    fileLabel.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : "Choose a file";
+
+    // If there's a file selected for upload, show the file name
+    if (fileInput.files.length > 0) {
+        fileLabel.textContent = fileInput.files[0].name;
+    } else {
+        // If no file is selected, reset label to "Choose a video"
+        fileLabel.textContent = "Choose a video";
+    }
 }
+
 
 function updateVideoList() {
     const dropdown = document.getElementById("videoList");
@@ -19,15 +28,25 @@ function updateVideoList() {
     });
 }
 
+// Update the file input label only when a new file is chosen
 function selectVideo() {
     const dropdown = document.getElementById("videoList");
     selectedVideo = dropdown.value;
     localStorage.setItem("selectedVideo", selectedVideo);
+
+    // Reset file label text back to default when a video is selected from the dropdown
+    document.getElementById("fileLabel").textContent = "Choose a video";
+
+    // Optionally reset file input value so the file selection doesn't appear in the input
+    document.getElementById("fileInput").value = '';
 }
+
 
 function uploadVideo() {
     const fileInput = document.getElementById("fileInput");
+    const fileLabel = document.getElementById("fileLabel");
     const file = fileInput.files[0];
+
     if (!file) return alert("No file selected.");
 
     const formData = new FormData();
@@ -42,8 +61,16 @@ function uploadVideo() {
             localStorage.setItem("selectedVideo", selectedVideo);
             updateVideoList();
             alert("Upload successful!");
+
+            fileInput.value = "";
+            fileLabel.textContent = "Choose a video";
+        })
+        .catch(err => {
+            alert("Upload failed.");
+            console.error("Upload error:", err);
         });
 }
+
 
 function playVideo() {
     if (!selectedVideo) return alert("Select a video first!");
