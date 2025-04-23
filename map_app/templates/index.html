@@ -9,7 +9,7 @@
 
 <div id="controls">
     <input type="file" id="fileInput" onchange="updateFileName()">
-    <label for="fileInput" id="fileLabel">Choose a file</label>
+    <label for="fileInput" id="fileLabel">Choose a video</label>
 
     <button onclick="uploadVideo()">Upload Video</button>
 
@@ -26,6 +26,11 @@
     <span id="closeButton" onclick="stopVideo()">&#10006;</span>
 </div>
 
+<!-- Live Detection Preview (stream from /video_feed) -->
+<div id="streamContainer" style="display: none; margin-top: 20px;">
+    <h3>Live Detection Preview</h3>
+    <img id="videoStream" src="" alt="Detection preview will appear here" width="100%" />
+</div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
