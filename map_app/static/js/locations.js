@@ -20,13 +20,14 @@ document.addEventListener("DOMContentLoaded", function () {
             }).addTo(map);
 
             const customCoords = {
-                "banner_22_best.jpg": [40.393861, 49.846307],
-                "banner_20_best.jpg": [40.374091, 49.846669],
-                "banner_1_best.jpg": [40.404734, 49.836355],
-                "banner_2_best.jpg": [40.404975, 49.836737],
-                "banner_3_best.jpg": [40.404856, 49.836315],
-                "banner_5_best.jpg": [40.404844, 49.836313]
-            };
+    "banner_30_best.jpg": [40.393861, 49.846307],
+    "banner_28_best.jpg": [40.374091, 49.846669],
+    "banner_1_best.jpg": [40.404734, 49.836355],
+    "banner_2_best.jpg": [40.404975, 49.836737],
+    "banner_19_best.jpg": [40.404856, 49.836315],
+    "banner_3_best.jpg": [40.404844, 49.836313]
+};
+
 
             locations.forEach(loc => {
                 const imageName = loc.image_link.split("/").pop();
