@@ -1,14 +1,19 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 from werkzeug.utils import secure_filename
-import os
 from db import create_table
 from main import generate_stream, stop_live_detection, detect_banners
 from models import db, Location
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env
+load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://elcan:yourpassword@localhost:5432/vagif'
+# Use database URL from .env
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy with the app
@@ -31,7 +36,6 @@ with app.app_context():
 def index():
     return render_template('index.html')
 
-
 @app.route('/upload', methods=['POST'])
 def upload_video():
     file = request.files['video']
@@ -42,11 +46,9 @@ def upload_video():
         return jsonify({'filename': filename})
     return 'No file uploaded', 400
 
-
 @app.route('/video/<filename>')
 def get_video(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
 
 @app.route('/video_feed')
 def video_feed():
@@ -55,7 +57,6 @@ def video_feed():
         return "Missing filename", 400
     filename = secure_filename(filename)
     return Response(generate_stream(filename), mimetype='multipart/x-mixed-replace; boundary=frame')
-
 
 @app.route('/stop_detection', methods=['POST'])
 def stop_detection():
@@ -66,8 +67,6 @@ def stop_detection():
 def locations():
     video_id = request.args.get('video', '')
     return render_template('locations.html', video_id=video_id)
-
-
 
 @app.route('/locations_data/<video_id>')
 def get_locations_data(video_id):
@@ -83,7 +82,6 @@ def get_locations_data(video_id):
     ]
     return jsonify(result)
 
-
 @app.route('/location/<int:location_id>')
 def get_location_image(location_id):
     loc = Location.query.get(location_id)
@@ -91,14 +89,12 @@ def get_location_image(location_id):
         return jsonify({"error": "Location not found"}), 404
     return jsonify({"image_link": loc.image_path})
 
-
 @app.route('/videos', methods=['GET'])
 def get_existing_videos():
     videos_folder = "videos"
     videos = [f for f in os.listdir(videos_folder)
               if os.path.isfile(os.path.join(videos_folder, f)) and f.endswith(('.mp4', '.avi', '.mov'))]
     return jsonify(videos)
-
 
 @app.route('/detect', methods=['POST'])
 def run_detection():
@@ -110,7 +106,6 @@ def run_detection():
     video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     detect_banners(video_path)  # This saves the crops and updates DB
     return jsonify({"status": "Detection complete"})
-
 
 @app.route('/delete', methods=['POST'])
 def delete_video():
@@ -125,7 +120,6 @@ def delete_video():
         return jsonify({'success': f'Video "{filename}" deleted successfully'}), 200
     else:
         return jsonify({'error': 'File not found'}), 404
-
 
 if __name__ == '__main__':
     app.run(debug=True)
