@@ -3,7 +3,7 @@ import psycopg2
 def get_connection():
     # Establish connection to PostgreSQL
     return psycopg2.connect(
-        dbname='banner_db',
+        dbname='vagif',
         user='elcan',
         password='yourpassword',  # Change to your password
         host='localhost',

@@ -8,7 +8,7 @@ from models import db, Location
 # Initialize Flask app
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://elcan:yourpassword@localhost:5432/banner_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://elcan:yourpassword@localhost:5432/vagif'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy with the app

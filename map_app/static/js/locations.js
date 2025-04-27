@@ -19,24 +19,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            const customCoords = {
-    "banner_30_best.jpg": [40.393861, 49.846307],
-    "banner_28_best.jpg": [40.374091, 49.846669],
-    "banner_1_best.jpg": [40.404734, 49.836355],
-    "banner_2_best.jpg": [40.404975, 49.836737],
-    "banner_19_best.jpg": [40.404856, 49.836315],
-    "banner_3_best.jpg": [40.404844, 49.836313]
-};
-
-
             locations.forEach(loc => {
-                const imageName = loc.image_link.split("/").pop();
-                let lat = loc.lat;
-                let lng = loc.lng;
-
-                if (customCoords[imageName]) {
-                    [lat, lng] = customCoords[imageName];
-                }
+                const lat = loc.lat;
+                const lng = loc.lng;
 
                 const marker = L.marker([lat, lng]).addTo(map);
 
